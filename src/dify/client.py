@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from src.dify.base import BaseClient
 
@@ -29,7 +30,18 @@ class Dify(BaseClient):
             },
             headers={'Authorization': f'Bearer {self.api_key}'}
         )
-        session = await self._get_session()
-        await session.close()
+        return response
+
+    async def get_conversation_history_messages(
+            self,
+            conversation_id: str,
+            user_id: str
+    ) -> tuple[int, dict[str, Any]]:
+        response = await self._make_request(
+            'get',
+            '/v1/messages',
+            params={"conversation_id": conversation_id, "user": str(user_id)},
+            headers={'Authorization': f'Bearer {self.api_key}'}
+        )
         return response
 

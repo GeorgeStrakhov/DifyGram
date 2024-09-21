@@ -17,14 +17,20 @@ from aiohttp import web
 
 COMMANDS = {
     'new_chat': 'Start new chat',
+    'threads': 'My threads'
 }
+
 
 def register_middlewares(dp) -> None:
     i18n_middleware: I18nMiddleware = make_i18n_middleware()
+    # Register i18n md for every update, even error
     for observer in dp.observers.values():
         observer.outer_middleware(i18n_middleware)
-        for middleware in middlewares:
-            observer.outer_middleware(middleware)
+    # Register db dependent and event dependent middlewares only on correct events
+    for middleware in middlewares:
+        dp.message.outer_middleware(middleware)
+        dp.callback_query.outer_middleware(middleware)
+
 
 async def set_main_menu(bot: Bot):
     main_menu_commands = [BotCommand(
@@ -33,8 +39,10 @@ async def set_main_menu(bot: Bot):
     ) for command, description in COMMANDS.items()]
     await bot.set_my_commands(main_menu_commands)
 
+
 async def handle_webhook(request):
     return web.Response(text="Your DifyGram bot is running! 🚀 Go test it on Telegram!")
+
 
 async def start_bot():
     """This function will start bot with polling mode and a web server."""
@@ -62,7 +70,7 @@ async def start_bot():
             bot,
             allowed_updates=dp.resolve_used_update_types(),
             **TransferData(
-                translator_hub=translator_hub,
+                _translator_hub=translator_hub,
                 dify=Dify(conf.dify.api_key)
             ),
         )
@@ -70,6 +78,7 @@ async def start_bot():
 
     # Run both the web server and the bot polling
     await asyncio.gather(polling_task)
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=conf.logging_level)

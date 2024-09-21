@@ -8,7 +8,9 @@ from typing import TypedDict
 
 from aiogram import Bot
 from fluentogram import TranslatorRunner, TranslatorHub
+from sqlalchemy.ext.asyncio import AsyncEngine
 
+from src.db import Database
 from src.dify.client import Dify
 
 
@@ -19,3 +21,5 @@ class TransferData(TypedDict):
     i18n: TranslatorRunner
     _translator_hub: TranslatorHub
     dify: Dify
+    engine: AsyncEngine
+    db: Database

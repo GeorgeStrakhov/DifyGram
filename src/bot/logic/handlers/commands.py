@@ -4,9 +4,11 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardRemove
+from aiogram_dialog import DialogManager
 from fluentogram import TranslatorRunner
 
 from src.bot.structures.FSM.base_fsm import Conversation
+from src.bot.structures.FSM.dialog_fsm import ThreadsSG
 
 commands_handler_router = Router(name='commands')
 
@@ -28,3 +30,9 @@ async def new_chat_handler(message: types.Message, i18n: TranslatorRunner, state
     await message.answer(i18n.new.chat(), reply_markup=ReplyKeyboardRemove())
     await state.clear()
     await state.set_state(Conversation.pending)
+
+
+@commands_handler_router.message(Command('threads'))
+async def threads_command_handler(message: types.Message, dialog_manager: DialogManager):
+    """Threads command handler."""
+    await dialog_manager.start(ThreadsSG.select)
